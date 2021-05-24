@@ -50,13 +50,33 @@ friends.add("Chih-Chun"); // java.lang.UnsupportedOperationException 에러 발�
 
 **List.of의 내부**
 
-![image-20210524204809829](/Users/we/Library/Application Support/typora-user-images/image-20210524204809829.png)
+```java
+static <E> List<E> of(E e1, E e2, E e3, E e4, E e5, E e6, E e7, E e8) {
+        return new ImmutableCollections.ListN<>(e1, e2, e3, e4, e5,
+                                                e6, e7, e8);
+    }
+```
 
-최대 10개 파라미터까지 이렇게 정의한다.
+이런식으로 최대 10개 파라미터까지 이렇게 정의한다.
 
 아래와 같이 가변 인수로 받을 수도 있지만 배열을 할당하고 가비지 컬렉션을 하는 비용을 지불해야 하기 때문이다.
 
-![image-20210524205005843](/Users/we/Library/Application Support/typora-user-images/image-20210524205005843.png)
+```java
+@SafeVarargs
+    @SuppressWarnings("varargs")
+    static <E> List<E> of(E... elements) {
+        switch (elements.length) { // implicit null check of elements
+            case 0:
+                return ImmutableCollections.emptyList();
+            case 1:
+                return new ImmutableCollections.List12<>(elements[0]);
+            case 2:
+                return new ImmutableCollections.List12<>(elements[0], elements[1]);
+            default:
+                return new ImmutableCollections.ListN<>(elements);
+        }
+    }
+```
 
 
 
@@ -294,4 +314,10 @@ Optional<Integer> maxValue =
 
 집합 뷰로 반환하는 keySet 메서드
 
-![스크린샷 2021-05-24 오후 10.00.34](/Users/we/Desktop/스크린샷 2021-05-24 오후 10.00.34.png)
+```java
+public KeySetView<K,V> keySet() {
+        KeySetView<K,V> ks;
+        if ((ks = keySet) != null) return ks;
+        return keySet = new KeySetView<K,V>(this, null);
+    }
+```
